@@ -1,0 +1,54 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const API = 'http://localhost:5000/articles';
+
+export default function ArticleList() {
+  const [articles, setArticles] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  const fetchArticles = async () => {
+    try {
+      const response = await axios.get(API);
+      setArticles(response.data);
+    } catch (error) {
+      console.error("Error loading articles:", error.response?.data || error.message);
+    }
+  };
+
+  const deleteArticle = async (id) => {
+    try {
+      await axios.delete(`${API}/${id}`);
+      fetchArticles();
+    } catch (error) {
+      console.error('Error deleting article:', error.response?.data || error.message);
+    }
+  };
+
+  return (
+    <div>
+      <nav style={{ marginBottom: '20px' }}>
+        <Link to="/" style={{ marginRight: '10px' }}>📄 View Articles</Link>
+        <Link to="/add"> ➕ Add Article</Link>
+      </nav>
+
+      <h2>Articles</h2>
+      <ul>
+        {articles.map(article => (
+          <li key={article.id}>
+            <strong>{article.title}</strong> <br />
+            <small>By Journalist #{article.journalistId} | Category #{article.categoryId}</small><br />
+            <button onClick={() => navigate(`/articles/${article.id}`)}>View</button>
+            <button onClick={() => navigate(`/update/${article.id}`)}>Update</button>
+            <button onClick={() => deleteArticle(article.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
